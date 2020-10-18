@@ -78,7 +78,7 @@ func (hbpro *HuoBiProMargin) FixedAccountBorrow(param BorrowParameter) (borrowId
 		return -1, errors.New(string(resp))
 	}
 
-	return respmap["data"].(int64), nil
+	return ToInt64(respmap["data"]), nil
 }
 
 
