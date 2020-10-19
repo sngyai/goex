@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
-	"time"
 )
 
 
@@ -17,7 +15,7 @@ type BinanceMargin struct {
 }
 
 func NewMargin(client *http.Client, api_key, secret_key string) *BinanceMargin {
-	return NewWithConfig(&APIConfig{
+	return NewMarginWithConfig(&APIConfig{
 		HttpClient:   client,
 		Endpoint:     GLOBAL_API_BASE_URL,
 		ApiKey:       api_key,
