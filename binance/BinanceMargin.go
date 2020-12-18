@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	. "github.com/nntaoli-project/goex"
@@ -8,7 +9,6 @@ import (
 	"net/url"
 	"strconv"
 )
-
 
 type BinanceMargin struct {
 	Binance
@@ -27,7 +27,7 @@ func NewMarginWithConfig(config *APIConfig) *BinanceMargin {
 		config.Endpoint = GLOBAL_API_BASE_URL
 	}
 
-	bn := &BinanceMargin{Binance:Binance{
+	bn := &BinanceMargin{Binance: Binance{
 		baseUrl:    config.Endpoint,
 		apiV1:      config.Endpoint + "/sapi/v1/",
 		apiV3:      config.Endpoint + "/sapi/v3/",
