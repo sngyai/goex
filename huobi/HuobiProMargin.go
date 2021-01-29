@@ -12,7 +12,6 @@ import (
 	. "github.com/nntaoli-project/goex"
 )
 
-
 type HuoBiProMargin struct {
 	httpClient *http.Client
 	baseUrl    string
@@ -31,7 +30,6 @@ func NewHuoBiProMargin(client *http.Client, apikey, secretkey, accountId string)
 	return hbpro
 }
 
-
 func (hbpro *HuoBiProMargin) GetFixedAccountInfo(symbol string) (AccountInfo, error) {
 	path := "/v1/margin/accounts/balance"
 	params := &url.Values{}
@@ -39,7 +37,7 @@ func (hbpro *HuoBiProMargin) GetFixedAccountInfo(symbol string) (AccountInfo, er
 
 	hbpro.buildPostForm("GET", path, params)
 
-	//log.Println(hbpro.baseUrl + path + "?" + params.Encode())
+	//log.Println(hbpro.BaseUrl + path + "?" + params.Encode())
 
 	respmap, err := HttpGet(hbpro.httpClient, hbpro.baseUrl+path+"?"+params.Encode())
 	if err != nil {
@@ -52,7 +50,6 @@ func (hbpro *HuoBiProMargin) GetFixedAccountInfo(symbol string) (AccountInfo, er
 	var info AccountInfo
 	return info, nil
 }
-
 
 func (hbpro *HuoBiProMargin) FixedAccountBorrow(param BorrowParameter) (borrowId int64, err error) {
 	path := fmt.Sprintf("/v1/margin/orders")
@@ -81,7 +78,6 @@ func (hbpro *HuoBiProMargin) FixedAccountBorrow(param BorrowParameter) (borrowId
 	return ToInt64(respmap["data"]), nil
 }
 
-
 func (hbpro *HuoBiProMargin) buildPostForm(reqMethod, path string, postForm *url.Values) error {
 	postForm.Set("AccessKeyId", hbpro.accessKey)
 	postForm.Set("SignatureMethod", "HmacSHA256")
@@ -95,7 +91,6 @@ func (hbpro *HuoBiProMargin) buildPostForm(reqMethod, path string, postForm *url
 	return nil
 }
 
-
 func (hbpro *HuoBiProMargin) toJson(params url.Values) string {
 	parammap := make(map[string]string)
 	for k, v := range params {
@@ -104,5 +99,3 @@ func (hbpro *HuoBiProMargin) toJson(params url.Values) string {
 	jsonData, _ := json.Marshal(parammap)
 	return string(jsonData)
 }
-
-

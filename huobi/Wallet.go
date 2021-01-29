@@ -85,8 +85,8 @@ func (w *Wallet) Transfer(param TransferParameter) error {
 	w.pro.buildPostForm("POST", path, &httpParam)
 
 	postJsonParam, _ := ValuesToJson(httpParam)
-	responseBody, err := HttpPostForm3(w.pro.httpClient,
-		fmt.Sprintf("%s%s?%s", w.pro.baseUrl, path, httpParam.Encode()),
+	responseBody, err := HttpPostForm3(w.pro.HttpClient,
+		fmt.Sprintf("%s%s?%s", w.pro.BaseUrl, path, httpParam.Encode()),
 		string(postJsonParam),
 		map[string]string{"Content-Type": "application/json", "Accept-Language": "zh-cn"})
 

@@ -41,11 +41,11 @@ type AccountInfo struct {
 }
 
 type HuoBiPro struct {
-	httpClient *http.Client
-	baseUrl    string
-	accountId  string
-	accessKey  string
-	secretKey  string
+	HttpClient *http.Client
+	BaseUrl    string
+	AccountId  string
+	AccessKey  string
+	SecretKey  string
 	Symbols    map[string]HuoBiProSymbol
 	//ECDSAPrivateKey string
 }
@@ -64,23 +64,23 @@ type HuoBiProSymbol struct {
 func NewHuobiWithConfig(config *APIConfig) *HuoBiPro {
 	hbpro := new(HuoBiPro)
 	if config.Endpoint == "" {
-		hbpro.baseUrl = "https://api.huobi.pro"
+		hbpro.BaseUrl = "https://api.huobi.pro"
 	} else {
-		hbpro.baseUrl = config.Endpoint
+		hbpro.BaseUrl = config.Endpoint
 	}
-	hbpro.httpClient = config.HttpClient
-	hbpro.accessKey = config.ApiKey
-	hbpro.secretKey = config.ApiSecretKey
+	hbpro.HttpClient = config.HttpClient
+	hbpro.AccessKey = config.ApiKey
+	hbpro.SecretKey = config.ApiSecretKey
 
 	if config.ApiKey != "" && config.ApiSecretKey != "" {
 		accinfo, err := hbpro.GetAccountInfo(HB_SPOT_ACCOUNT)
 		if err != nil {
-			hbpro.accountId = ""
+			hbpro.AccountId = ""
 			//panic(err)
 		} else {
-			hbpro.accountId = accinfo.Id
+			hbpro.AccountId = accinfo.Id
 			//log.Println("account state :", accinfo.State)
-			Log.Info("accountId=", accinfo.Id, ",state=", accinfo.State, ",type=", accinfo.Type)
+			Log.Info("AccountId=", accinfo.Id, ",state=", accinfo.State, ",type=", accinfo.Type)
 		}
 	}
 
@@ -94,11 +94,11 @@ func NewHuobiWithConfig(config *APIConfig) *HuoBiPro {
 
 func NewHuoBiPro(client *http.Client, apikey, secretkey, accountId string) *HuoBiPro {
 	hbpro := new(HuoBiPro)
-	hbpro.baseUrl = "https://api.huobi.pro"
-	hbpro.httpClient = client
-	hbpro.accessKey = apikey
-	hbpro.secretKey = secretkey
-	hbpro.accountId = accountId
+	hbpro.BaseUrl = "https://api.huobi.pro"
+	hbpro.HttpClient = client
+	hbpro.AccessKey = apikey
+	hbpro.SecretKey = secretkey
+	hbpro.AccountId = accountId
 	return hbpro
 }
 
@@ -109,10 +109,10 @@ func NewHuoBiProSpot(client *http.Client, apikey, secretkey string) *HuoBiPro {
 	hb := NewHuoBiPro(client, apikey, secretkey, "")
 	accinfo, err := hb.GetAccountInfo(HB_SPOT_ACCOUNT)
 	if err != nil {
-		hb.accountId = ""
+		hb.AccountId = ""
 		panic(err)
 	} else {
-		hb.accountId = accinfo.Id
+		hb.AccountId = accinfo.Id
 		Log.Info("account state :", accinfo.State)
 	}
 
@@ -133,7 +133,7 @@ func NewHuoBiProPoint(client *http.Client, apikey, secretkey string) *HuoBiPro {
 	if err != nil {
 		panic(err)
 	}
-	hb.accountId = accinfo.Id
+	hb.AccountId = accinfo.Id
 	Log.Info("account state :" + accinfo.State)
 	return hb
 }
@@ -143,9 +143,9 @@ func (hbpro *HuoBiPro) GetAccountInfo(acc string) (AccountInfo, error) {
 	params := &url.Values{}
 	hbpro.buildPostForm("GET", path, params)
 
-	//log.Println(hbpro.baseUrl + path + "?" + params.Encode())
+	//log.Println(hbpro.BaseUrl + path + "?" + params.Encode())
 
-	respmap, err := HttpGet(hbpro.httpClient, hbpro.baseUrl+path+"?"+params.Encode())
+	respmap, err := HttpGet(hbpro.HttpClient, hbpro.BaseUrl+path+"?"+params.Encode())
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -171,14 +171,14 @@ func (hbpro *HuoBiPro) GetAccountInfo(acc string) (AccountInfo, error) {
 }
 
 func (hbpro *HuoBiPro) GetAccount() (*Account, error) {
-	path := fmt.Sprintf("/v1/account/accounts/%s/balance", hbpro.accountId)
+	path := fmt.Sprintf("/v1/account/accounts/%s/balance", hbpro.AccountId)
 	params := &url.Values{}
-	params.Set("accountId-id", hbpro.accountId)
+	params.Set("AccountId-id", hbpro.AccountId)
 	hbpro.buildPostForm("GET", path, params)
 
-	urlStr := hbpro.baseUrl + path + "?" + params.Encode()
+	urlStr := hbpro.BaseUrl + path + "?" + params.Encode()
 	//println(urlStr)
-	respmap, err := HttpGet(hbpro.httpClient, urlStr)
+	respmap, err := HttpGet(hbpro.HttpClient, urlStr)
 
 	if err != nil {
 		return nil, err
@@ -232,7 +232,7 @@ func (hbpro *HuoBiPro) placeOrder(amount, price string, pair CurrencyPair, order
 
 	path := "/v1/order/orders/place"
 	params := url.Values{}
-	params.Set("account-id", hbpro.accountId)
+	params.Set("account-id", hbpro.AccountId)
 	params.Set("client-order-id", GenerateOrderClientId(32))
 	params.Set("amount", FloatToString(ToFloat64(amount), int(symbol.AmountPrecision)))
 	params.Set("symbol", pair.AdaptUsdToUsdt().ToLower().ToSymbol(""))
@@ -245,7 +245,7 @@ func (hbpro *HuoBiPro) placeOrder(amount, price string, pair CurrencyPair, order
 
 	hbpro.buildPostForm("POST", path, &params)
 
-	resp, err := HttpPostForm3(hbpro.httpClient, hbpro.baseUrl+path+"?"+params.Encode(), hbpro.toJson(params),
+	resp, err := HttpPostForm3(hbpro.HttpClient, hbpro.BaseUrl+path+"?"+params.Encode(), hbpro.toJson(params),
 		map[string]string{"Content-Type": "application/json", "Accept-Language": "zh-cn"})
 	if err != nil {
 		return "", err
@@ -394,7 +394,7 @@ func (hbpro *HuoBiPro) GetOneOrder(orderId string, currency CurrencyPair) (*Orde
 	path := "/v1/order/orders/" + orderId
 	params := url.Values{}
 	hbpro.buildPostForm("GET", path, &params)
-	respmap, err := HttpGet(hbpro.httpClient, hbpro.baseUrl+path+"?"+params.Encode())
+	respmap, err := HttpGet(hbpro.HttpClient, hbpro.BaseUrl+path+"?"+params.Encode())
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +420,7 @@ func (hbpro *HuoBiPro) CancelOrder(orderId string, currency CurrencyPair) (bool,
 	path := fmt.Sprintf("/v1/order/orders/%s/submitcancel", orderId)
 	params := url.Values{}
 	hbpro.buildPostForm("POST", path, &params)
-	resp, err := HttpPostForm3(hbpro.httpClient, hbpro.baseUrl+path+"?"+params.Encode(), hbpro.toJson(params),
+	resp, err := HttpPostForm3(hbpro.HttpClient, hbpro.BaseUrl+path+"?"+params.Encode(), hbpro.toJson(params),
 		map[string]string{"Content-Type": "application/json", "Accept-Language": "zh-cn"})
 	if err != nil {
 		return false, err
@@ -467,7 +467,7 @@ func (hbpro *HuoBiPro) getOrders(pair CurrencyPair, optional ...OptionalParamete
 	MergeOptionalParameter(&params, optional...)
 	Log.Info(params)
 	hbpro.buildPostForm("GET", path, &params)
-	respmap, err := HttpGet(hbpro.httpClient, fmt.Sprintf("%s%s?%s", hbpro.baseUrl, path, params.Encode()))
+	respmap, err := HttpGet(hbpro.HttpClient, fmt.Sprintf("%s%s?%s", hbpro.BaseUrl, path, params.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -490,8 +490,8 @@ func (hbpro *HuoBiPro) getOrders(pair CurrencyPair, optional ...OptionalParamete
 
 func (hbpro *HuoBiPro) GetTicker(currencyPair CurrencyPair) (*Ticker, error) {
 	pair := currencyPair.AdaptUsdToUsdt()
-	url := hbpro.baseUrl + "/market/detail/merged?symbol=" + strings.ToLower(pair.ToSymbol(""))
-	respmap, err := HttpGet(hbpro.httpClient, url)
+	url := hbpro.BaseUrl + "/market/detail/merged?symbol=" + strings.ToLower(pair.ToSymbol(""))
+	respmap, err := HttpGet(hbpro.HttpClient, url)
 	if err != nil {
 		return nil, err
 	}
@@ -527,7 +527,7 @@ func (hbpro *HuoBiPro) GetTicker(currencyPair CurrencyPair) (*Ticker, error) {
 }
 
 func (hbpro *HuoBiPro) GetDepth(size int, currency CurrencyPair) (*Depth, error) {
-	url := hbpro.baseUrl + "/market/depth?symbol=%s&type=step0&depth=%d"
+	url := hbpro.BaseUrl + "/market/depth?symbol=%s&type=step0&depth=%d"
 	n := 5
 	pair := currency.AdaptUsdToUsdt()
 	if size <= 5 {
@@ -537,9 +537,9 @@ func (hbpro *HuoBiPro) GetDepth(size int, currency CurrencyPair) (*Depth, error)
 	} else if size <= 20 {
 		n = 20
 	} else {
-		url = hbpro.baseUrl + "/market/depth?symbol=%s&type=step0&d=%d"
+		url = hbpro.BaseUrl + "/market/depth?symbol=%s&type=step0&d=%d"
 	}
-	respmap, err := HttpGet(hbpro.httpClient, fmt.Sprintf(url, strings.ToLower(pair.ToSymbol("")), n))
+	respmap, err := HttpGet(hbpro.HttpClient, fmt.Sprintf(url, strings.ToLower(pair.ToSymbol("")), n))
 	if err != nil {
 		return nil, err
 	}
@@ -560,14 +560,14 @@ func (hbpro *HuoBiPro) GetDepth(size int, currency CurrencyPair) (*Depth, error)
 
 //倒序
 func (hbpro *HuoBiPro) GetKlineRecords(currency CurrencyPair, period KlinePeriod, size int, optional ...OptionalParameter) ([]Kline, error) {
-	url := hbpro.baseUrl + "/market/history/kline?period=%s&size=%d&symbol=%s"
+	url := hbpro.BaseUrl + "/market/history/kline?period=%s&size=%d&symbol=%s"
 	symbol := strings.ToLower(currency.AdaptUsdToUsdt().ToSymbol(""))
 	periodS, isOk := _INERNAL_KLINE_PERIOD_CONVERTER[period]
 	if isOk != true {
 		periodS = "1min"
 	}
 
-	ret, err := HttpGet(hbpro.httpClient, fmt.Sprintf(url, periodS, size, symbol))
+	ret, err := HttpGet(hbpro.HttpClient, fmt.Sprintf(url, periodS, size, symbol))
 	if err != nil {
 		return nil, err
 	}
@@ -614,8 +614,8 @@ func (hbpro *HuoBiPro) GetTrades(currencyPair CurrencyPair, since int64) ([]Trad
 		}
 	)
 
-	url := hbpro.baseUrl + "/market/history/trade?size=2000&symbol=" + currencyPair.AdaptUsdToUsdt().ToLower().ToSymbol("")
-	err := HttpGet4(hbpro.httpClient, url, map[string]string{}, &ret)
+	url := hbpro.BaseUrl + "/market/history/trade?size=2000&symbol=" + currencyPair.AdaptUsdToUsdt().ToLower().ToSymbol("")
+	err := HttpGet4(hbpro.HttpClient, url, map[string]string{}, &ret)
 	if err != nil {
 		return nil, err
 	}
@@ -654,13 +654,13 @@ type ecdsaSignature struct {
 }
 
 func (hbpro *HuoBiPro) buildPostForm(reqMethod, path string, postForm *url.Values) error {
-	postForm.Set("AccessKeyId", hbpro.accessKey)
+	postForm.Set("AccessKeyId", hbpro.AccessKey)
 	postForm.Set("SignatureMethod", "HmacSHA256")
 	postForm.Set("SignatureVersion", "2")
 	postForm.Set("Timestamp", time.Now().UTC().Format("2006-01-02T15:04:05"))
-	domain := strings.Replace(hbpro.baseUrl, "https://", "", len(hbpro.baseUrl))
+	domain := strings.Replace(hbpro.BaseUrl, "https://", "", len(hbpro.BaseUrl))
 	payload := fmt.Sprintf("%s\n%s\n%s\n%s", reqMethod, domain, path, postForm.Encode())
-	sign, _ := GetParamHmacSHA256Base64Sign(hbpro.secretKey, payload)
+	sign, _ := GetParamHmacSHA256Base64Sign(hbpro.SecretKey, payload)
 	postForm.Set("Signature", sign)
 
 	/**
@@ -725,9 +725,9 @@ func (hbpro *HuoBiPro) GetExchangeName() string {
 }
 
 func (hbpro *HuoBiPro) GetCurrenciesList() ([]string, error) {
-	url := hbpro.baseUrl + "/v1/common/currencys"
+	url := hbpro.BaseUrl + "/v1/common/currencys"
 
-	ret, err := HttpGet(hbpro.httpClient, url)
+	ret, err := HttpGet(hbpro.HttpClient, url)
 	if err != nil {
 		return nil, err
 	}
@@ -741,9 +741,9 @@ func (hbpro *HuoBiPro) GetCurrenciesList() ([]string, error) {
 }
 
 func (hbpro *HuoBiPro) GetCurrenciesPrecision() ([]HuoBiProSymbol, error) {
-	url := hbpro.baseUrl + "/v1/common/symbols"
+	url := hbpro.BaseUrl + "/v1/common/symbols"
 
-	ret, err := HttpGet(hbpro.httpClient, url)
+	ret, err := HttpGet(hbpro.HttpClient, url)
 	if err != nil {
 		return nil, err
 	}
