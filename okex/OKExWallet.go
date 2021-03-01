@@ -77,7 +77,7 @@ func (ok *OKExWallet) Transfer(param TransferParameter) error {
 func (ok *OKExWallet) Withdrawal(param WithdrawParameter) (withdrawId string, err error) {
 	var response struct {
 		Result       bool   `json:"result"`
-		WithdrawId   string `json:"withdraw_id"`
+		WithdrawId   string `json:"withdrawal_id"`
 		ErrorCode    string `json:"code"`
 		ErrorMessage string `json:"message"`
 	}
