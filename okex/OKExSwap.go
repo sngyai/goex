@@ -276,10 +276,10 @@ func (ok *OKExSwap) PlaceFutureOrder(currencyPair CurrencyPair, contractType, pr
 }
 
 func (ok *OKExSwap) PlaceFutureOrder2(currencyPair CurrencyPair, contractType, price, amount string, openType, matchPrice int, opt ...LimitOrderOptionalParameter) (*FutureOrder, error) {
-	cid := GenerateOrderClientId(32)
+	//cid := GenerateOrderClientId
 	param := PlaceOrderInfo{
 		BasePlaceOrderInfo{
-			ClientOid:  cid,
+			//ClientOid:  cid,
 			Price:      price,
 			MatchPrice: fmt.Sprint(matchPrice),
 			Type:       fmt.Sprint(openType),
@@ -287,6 +287,12 @@ func (ok *OKExSwap) PlaceFutureOrder2(currencyPair CurrencyPair, contractType, p
 			OrderType:  "0",
 		},
 		ok.adaptContractType(currencyPair),
+	}
+
+	if ok.customCIDFunc != nil {
+		param.ClientOid = ok.customCIDFunc()
+	} else {
+		param.ClientOid = GenerateOrderClientId(32)
 	}
 
 	if len(opt) > 0 {
@@ -303,7 +309,7 @@ func (ok *OKExSwap) PlaceFutureOrder2(currencyPair CurrencyPair, contractType, p
 	reqBody, _, _ := ok.OKEx.BuildRequestBody(param)
 
 	fOrder := &FutureOrder{
-		ClientOid:    cid,
+		ClientOid:    param.ClientOid,
 		Currency:     currencyPair,
 		ContractName: contractType,
 		OType:        openType,

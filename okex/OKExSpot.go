@@ -112,10 +112,18 @@ func (ok *OKExSpot) BatchPlaceOrders(orders []Order) ([]PlaceOrderResponse, erro
 func (ok *OKExSpot) PlaceOrder(ty string, ord *Order) (*Order, error) {
 	urlPath := "/api/spot/v3/orders"
 	param := PlaceOrderParam{
-		ClientOid:    GenerateOrderClientId(32),
 		InstrumentId: ord.Currency.AdaptUsdToUsdt().ToLower().ToSymbol("-"),
 	}
+	if ord.Cid != "" {
+		param.ClientOid = ord.Cid
 
+	} else {
+		if ok.customCIDFunc != nil {
+			param.ClientOid = ok.customCIDFunc()
+		} else {
+			param.ClientOid = GenerateOrderClientId(32)
+		}
+	}
 	var response PlaceOrderResponse
 
 	switch ord.Side {
