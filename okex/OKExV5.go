@@ -2,6 +2,7 @@ package okex
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ func NewOKExV5(config *APIConfig) *OKExV5 {
 	return okex
 }
 
-func (ok *OKExV5) GetExchangeName() string {
+func (ok *OKExV5) ExchangeName() string {
 	return OKEX
 }
 
@@ -129,25 +130,45 @@ func (ok *OKExV5) GetDepthV5(instId string, size int) (*DepthV5, error) {
 	return &response.Data[0], nil
 }
 
-func (ok *OKExV5) GetKlineRecords(instId string, size int) (*DepthV5, error) {
+// type Candle struct {
+// 	Asks      [][]string `json:"asks,string"`
+// 	Bids      [][]string `json:"bids,string"`
+// 	Timestamp uint64     `json:"ts,string"` // 单位:ms
+// }
+
+func (ok *OKExV5) GetKlineRecordsV5(instId, after, before, bar, limit string) ([][]string, error) {
 
 	urlPath := fmt.Sprintf("%s/api/v5/market/candles?instId=%s", ok.config.Endpoint, instId)
-	if size > 0 {
-		urlPath = fmt.Sprintf("%s&sz=%d", urlPath, size)
+	params := url.Values{}
+	if after != "" {
+		params.Set("after", after)
 	}
-	type DepthV5Response struct {
-		Code int       `json:"code,string"`
-		Msg  string    `json:"msg"`
-		Data []DepthV5 `json:"data"`
+	if before != "" {
+		params.Set("before", before)
 	}
-	var response DepthV5Response
+	if bar != "" {
+		params.Set("bar", bar)
+	}
+	if limit != "" {
+		params.Set("limit", limit)
+	}
+	if params.Encode() != "" {
+		urlPath = fmt.Sprintf("%s&%s", urlPath, params.Encode())
+	}
+
+	type CandleResponse struct {
+		Code int        `json:"code,string"`
+		Msg  string     `json:"msg"`
+		Data [][]string `json:"data"`
+	}
+	var response CandleResponse
 	err := HttpGet4(ok.config.HttpClient, urlPath, nil, &response)
 	if err != nil {
 		return nil, err
 	}
 
 	if response.Code != 0 {
-		return nil, fmt.Errorf("GetDepthV5 error:%s", response.Msg)
+		return nil, fmt.Errorf("GetKlineRecordsV5 error:%s", response.Msg)
 	}
-	return &response.Data[0], nil
+	return response.Data, nil
 }

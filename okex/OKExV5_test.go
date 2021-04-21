@@ -36,3 +36,9 @@ func TestOKExV5_GetDepth(t *testing.T) {
 	o := newOKExV5Client()
 	fmt.Println(o.GetDepthV5("BTC-USD-SWAP", 0))
 }
+
+func TestOKExV5_GetKlineRecordsV5(t *testing.T) {
+	o := newOKExV5Client()
+	fmt.Println(o.GetKlineRecordsV5("BTC-USDT", "", "", "", ""))
+
+}
