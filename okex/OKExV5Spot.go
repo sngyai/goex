@@ -21,19 +21,95 @@ func NewOKExV5Spot(config *APIConfig) *OKExV5Spot {
 
 // private API
 func (ok *OKExV5Spot) LimitBuy(amount, price string, currency CurrencyPair, opt ...LimitOrderOptionalParameter) (*Order, error) {
-	panic("not support")
+	ty := "limit"
+	if len(opt) > 0 {
+		ty = opt[0].String()
+	}
+
+	response, err := ok.CreateOrder(&CreateOrderParam{
+		Symbol:    currency.ToSymbol("-"),
+		TradeMode: "cash",
+		Side:      "buy",
+		OrderType: ty,
+		Size:      amount,
+		Price:     price,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Order{
+		Currency: currency,
+		Price:    ToFloat64(price),
+		Amount:   ToFloat64(amount),
+		Cid:      response.ClientOrdId,
+		OrderID2: response.OrdId,
+	}, nil
 
 }
 func (ok *OKExV5Spot) LimitSell(amount, price string, currency CurrencyPair, opt ...LimitOrderOptionalParameter) (*Order, error) {
-	panic("not support")
+	ty := "limit"
+	if len(opt) > 0 {
+		ty = opt[0].String()
+	}
+
+	response, err := ok.CreateOrder(&CreateOrderParam{
+		Symbol:    currency.ToSymbol("-"),
+		TradeMode: "cash",
+		Side:      "sell",
+		OrderType: ty,
+		Size:      amount,
+		Price:     price,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Order{
+		Currency: currency,
+		Price:    ToFloat64(price),
+		Amount:   ToFloat64(amount),
+		Cid:      response.ClientOrdId,
+		OrderID2: response.OrdId,
+	}, nil
 
 }
 func (ok *OKExV5Spot) MarketBuy(amount, price string, currency CurrencyPair) (*Order, error) {
-	panic("not support")
+
+	response, err := ok.CreateOrder(&CreateOrderParam{
+		Symbol:    currency.ToSymbol("-"),
+		TradeMode: "cash",
+		Side:      "buy",
+		OrderType: "market",
+		Size:      amount,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Order{
+		Currency: currency,
+		Amount:   ToFloat64(amount),
+		Cid:      response.ClientOrdId,
+		OrderID2: response.OrdId,
+	}, nil
 
 }
 func (ok *OKExV5Spot) MarketSell(amount, price string, currency CurrencyPair) (*Order, error) {
-	panic("not support")
+
+	response, err := ok.CreateOrder(&CreateOrderParam{
+		Symbol:    currency.ToSymbol("-"),
+		TradeMode: "cash",
+		Side:      "sell",
+		OrderType: "market",
+		Size:      amount,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Order{
+		Currency: currency,
+		Amount:   ToFloat64(amount),
+		Cid:      response.ClientOrdId,
+		OrderID2: response.OrdId,
+	}, nil
 
 }
 func (ok *OKExV5Spot) CancelOrder(orderId string, currency CurrencyPair) (bool, error) {
