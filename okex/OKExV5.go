@@ -56,7 +56,7 @@ func (ok *OKExV5) SetCustomCID(f func() string) {
 // 		urlPath = fmt.Sprintf("%s&uly=%s", urlPath, uly)
 // 	}
 // 	var response spotTickerResponse
-// 	err := ok.OKEx.DoRequest("GET", urlPath, "", &response)
+// 	err := ok.OKEx.DoAuthorRequest("GET", urlPath, "", &response)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -213,7 +213,7 @@ func (ok *OKExV5) doParamSign(httpMethod, uri, requestBody string) (string, stri
 	return sign, timestamp
 }
 
-func (ok *OKExV5) DoRequest(httpMethod, uri, reqBody string, response interface{}) error {
+func (ok *OKExV5) DoAuthorRequest(httpMethod, uri, reqBody string, response interface{}) error {
 	url := ok.config.Endpoint + uri
 	sign, timestamp := ok.doParamSign(httpMethod, uri, reqBody)
 	//logger.Log.Debug("timestamp=", timestamp, ", sign=", sign)
@@ -308,7 +308,7 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderSummaryV5, error) 
 	uri := "/api/v5/trade/order"
 
 	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
-	err := ok.DoRequest("POST", uri, jsonStr, &response)
+	err := ok.DoAuthorRequest(http.MethodPost, uri, jsonStr, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +341,7 @@ func (ok *OKExV5) CancelOrderV5(instId, ordId, clOrdId string) (*OrderSummaryV5,
 	uri := "/api/v5/trade/cancel-order"
 
 	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
-	err := ok.DoRequest("POST", uri, jsonStr, &response)
+	err := ok.DoAuthorRequest(http.MethodPost, uri, jsonStr, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -400,7 +400,7 @@ type OrderV5 struct {
 
 func (ok *OKExV5) GetPendingOrders(param *PendingOrderParam) ([]OrderV5, error) {
 
-	reqBody := make(map[string]interface{})
+	reqBody := make(map[string]string)
 
 	if param.InstType != "" {
 		reqBody["instType"] = param.InstType
@@ -434,10 +434,17 @@ func (ok *OKExV5) GetPendingOrders(param *PendingOrderParam) ([]OrderV5, error) 
 	}
 	var response OrderResponse
 
-	uri := "/api/v5/trade/orders-pending"
+	uri := url.Values{}
+	for k, v := range reqBody {
+		uri.Set(k, v)
+	}
+	path := "/api/v5/trade/orders-pending"
+	if len(reqBody) > 0 {
+		path = fmt.Sprintf("%s?%s", path, uri.Encode())
+	}
 
 	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
-	err := ok.DoRequest(http.MethodGet, uri, jsonStr, &response)
+	err := ok.DoAuthorRequest(http.MethodGet, path, jsonStr, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +457,7 @@ func (ok *OKExV5) GetPendingOrders(param *PendingOrderParam) ([]OrderV5, error) 
 
 func (ok *OKExV5) GetOrderV5(instId, ordId, clOrdId string) (*OrderV5, error) {
 
-	reqBody := make(map[string]interface{})
+	reqBody := make(map[string]string)
 
 	reqBody["instId"] = instId
 	if ordId != "" {
@@ -467,10 +474,17 @@ func (ok *OKExV5) GetOrderV5(instId, ordId, clOrdId string) (*OrderV5, error) {
 	}
 	var response OrderResponse
 
-	uri := "/api/v5/trade/order"
+	uri := url.Values{}
+	for k, v := range reqBody {
+		uri.Set(k, v)
+	}
+	path := "/api/v5/trade/order"
+	if len(reqBody) > 0 {
+		path = fmt.Sprintf("%s?%s", path, uri.Encode())
+	}
 
 	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
-	err := ok.DoRequest(http.MethodGet, uri, jsonStr, &response)
+	err := ok.DoAuthorRequest(http.MethodGet, path, jsonStr, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -481,34 +495,34 @@ func (ok *OKExV5) GetOrderV5(instId, ordId, clOrdId string) (*OrderV5, error) {
 	return &response.Data[0], nil
 }
 
-type BalanceSummary struct {
+type AssetSummary struct {
 	Currency  string  `json:"ccy"`
-	Total     float64 `json:"bal,string"`
+	Total     float64 `json:"bal"`
 	Available float64 `json:"availBal,string"`
 	Frozen    float64 `json:"frozenBal,string"`
 }
 
-func (ok *OKExV5) GetAssetBalances(currency string) ([]BalanceSummary, error) {
+func (ok *OKExV5) GetAssetBalances(currency string) ([]AssetSummary, error) {
 
 	reqBody := make(map[string]interface{})
 
+	path := "/api/v5/asset/balances"
 	jsonStr := ""
 	reqBody["ccy"] = currency
 	if currency != "" {
 		reqBody["ccy"] = currency
 		jsonStr, _, _ = ok.BuildRequestBody(reqBody)
+		path = fmt.Sprintf("%s?ccy=%s", path, currency)
 	}
 
-	type BalanceSummaryResponse struct {
-		Code int              `json:"code,string"`
-		Msg  string           `json:"msg"`
-		Data []BalanceSummary `json:"data"`
+	type AssetSummaryResponse struct {
+		Code int            `json:"code,string"`
+		Msg  string         `json:"msg"`
+		Data []AssetSummary `json:"data"`
 	}
-	var response BalanceSummaryResponse
+	var response AssetSummaryResponse
 
-	uri := "/api/v5/trade/order"
-
-	err := ok.DoRequest(http.MethodGet, uri, jsonStr, &response)
+	err := ok.DoAuthorRequest(http.MethodGet, path, jsonStr, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -519,5 +533,63 @@ func (ok *OKExV5) GetAssetBalances(currency string) ([]BalanceSummary, error) {
 	return response.Data, nil
 }
 
-//     /api/v5/asset/balances
-//     /api/v5/account/balance
+type BalanceV5 struct {
+	AdjEq    string          `json:"adjEq"`
+	Details  []BalanceDetail `json:"details"`
+	Imr      string          `json:"imr"`
+	IsoEq    string          `json:"isoEq"`
+	MgnRatio string          `json:"mgnRatio"`
+	Mmr      string          `json:"mmr"`
+	OrdFroz  string          `json:"ordFroz"`
+	TotalEq  string          `json:"totalEq"`
+	UTime    string          `json:"uTime"`
+}
+
+type BalanceDetail struct {
+	Available string `json:"availBal"`
+	AvailEq   string `json:"availEq"`
+	CashBal   string `json:"cashBal"`
+	Currency  string `json:"ccy"`
+	DisEq     string `json:"disEq"`
+	Eq        string `json:"eq"`
+	Frozen    string `json:"frozenBal"`
+	Interest  string `json:"interest"`
+	IsoEq     string `json:"isoEq"`
+	Liab      string `json:"liab"`
+	MgnRatio  string `json:"mgnRatio"`
+	OrdFrozen string `json:"ordFrozen"`
+	UTime     string `json:"uTime"`
+	Upl       string `json:"upl"`
+	UplLiab   string `json:"uplLiab"`
+}
+
+func (ok *OKExV5) GetAccountBalances(currency string) (*BalanceV5, error) {
+
+	reqBody := make(map[string]interface{})
+
+	path := "/api/v5/account/balance"
+	jsonStr := ""
+	reqBody["ccy"] = currency
+	if currency != "" {
+		reqBody["ccy"] = currency
+		jsonStr, _, _ = ok.BuildRequestBody(reqBody)
+		path = fmt.Sprintf("%s?ccy=%s", path, currency)
+	}
+
+	type BalanceV5Response struct {
+		Code int         `json:"code,string"`
+		Msg  string      `json:"msg"`
+		Data []BalanceV5 `json:"data"`
+	}
+	var response BalanceV5Response
+
+	err := ok.DoAuthorRequest(http.MethodGet, path, jsonStr, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code != 0 {
+		return nil, fmt.Errorf("GetAccountBalances error:%s", response.Msg)
+	}
+	return &response.Data[0], nil
+}

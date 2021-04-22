@@ -55,5 +55,14 @@ func TestOKExV5Spot_CancelOrder(t *testing.T) {
 func TestOKExV5Spot_GetUnfinishOrders(t *testing.T) {
 	c := newOKExV5SpotClient()
 	t.Log(c.GetUnfinishOrders(goex.XRP_USDT))
+}
 
+func TestOKExV5Spot_GetOneOrder(t *testing.T) {
+	c := newOKExV5SpotClient()
+	t.Log(c.GetOneOrder("305267682086109184", goex.XRP_USDT))
+}
+
+func TestOKExV5Spot_GetAccount(t *testing.T) {
+	c := newOKExV5SpotClient()
+	t.Log(c.GetAccount())
 }

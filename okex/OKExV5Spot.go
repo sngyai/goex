@@ -158,8 +158,8 @@ func (ok *OKExV5Spot) GetOneOrder(orderId string, currency CurrencyPair) (*Order
 		OrderTime:    response.CTime,
 		FinishedTime: response.UTime,
 	}, nil
-
 }
+
 func (ok *OKExV5Spot) GetUnfinishOrders(currency CurrencyPair) ([]Order, error) {
 	response, err := ok.GetPendingOrders(&PendingOrderParam{
 		InstType: "SPOT",
@@ -211,22 +211,24 @@ func (ok *OKExV5Spot) GetOrderHistorys(currency CurrencyPair, opt ...OptionalPar
 	panic("not support")
 
 }
+
 func (ok *OKExV5Spot) GetAccount() (*Account, error) {
-	response, err := ok.GetAssetBalances("")
+	response, err := ok.GetAccountBalances("")
 	if err != nil {
-		
+		return nil, err
+	}
 	account := &Account{
 		SubAccounts: make(map[Currency]SubAccount, 2)}
-		for _, itm := range response {
-			currency := NewCurrency(itm.Currency, "")
-			account.SubAccounts[currency] = SubAccount{
-				Currency:     currency,
-				ForzenAmount: itm.Frozen,
-				Amount:       itm.Available,
-			}
+	for _, itm := range response.Details {
+		currency := NewCurrency(itm.Currency, "")
+		account.SubAccounts[currency] = SubAccount{
+			Currency:     currency,
+			ForzenAmount: ToFloat64(itm.Frozen),
+			Amount:       ToFloat64(itm.AvailEq),
 		}
-	
-		return account, nil
+	}
+
+	return account, nil
 }
 
 // public API
