@@ -121,25 +121,73 @@ func (ok *OKExV5Spot) CancelOrder(orderId string, currency CurrencyPair) (bool, 
 
 }
 func (ok *OKExV5Spot) GetOneOrder(orderId string, currency CurrencyPair) (*Order, error) {
-	panic("not support")
+	response, err := ok.GetOrderV5(currency.ToSymbol("-"), orderId, "")
+	if err != nil {
+		return nil, err
+	}
+	status := ORDER_UNFINISH
+	switch response.State {
+	case "canceled":
+		status = ORDER_CANCEL
+	case "live":
+		status = ORDER_UNFINISH
+	case "partially_filled":
+		status = ORDER_PART_FINISH
+	case "filled":
+		status = ORDER_FINISH
+	default:
+		status = ORDER_UNFINISH
+	}
+
+	side := BUY
+	if response.Side == "sell" || response.Side == "SELL" {
+		side = SELL
+	}
+	return &Order{
+		Price:        response.Px,
+		Amount:       response.Sz,
+		AvgPrice:     ToFloat64(response.AvgPx),
+		DealAmount:   ToFloat64(response.AccFillSz),
+		Fee:          response.Fee,
+		Cid:          response.ClOrdID,
+		OrderID2:     response.OrdID,
+		Status:       status,
+		Currency:     currency,
+		Side:         side,
+		Type:         response.OrdType,
+		OrderTime:    response.CTime,
+		FinishedTime: response.UTime,
+	}, nil
 
 }
 func (ok *OKExV5Spot) GetUnfinishOrders(currency CurrencyPair) ([]Order, error) {
 	response, err := ok.GetPendingOrders(&PendingOrderParam{
 		InstType: "SPOT",
-		Uly:      "",
 		InstId:   currency.ToSymbol("-"),
-		OrdType:  "",
-		State:    "",
-		After:    "",
-		Before:   "",
-		Limit:    "",
 	})
 	if err != nil {
 		return nil, err
 	}
 	orders := make([]Order, 0)
 	for _, v := range response {
+		status := ORDER_UNFINISH
+		switch v.State {
+		case "canceled":
+			status = ORDER_CANCEL
+		case "live":
+			status = ORDER_UNFINISH
+		case "partially_filled":
+			status = ORDER_PART_FINISH
+		case "filled":
+			status = ORDER_FINISH
+		default:
+			status = ORDER_UNFINISH
+		}
+
+		side := BUY
+		if v.Side == "sell" || v.Side == "SELL" {
+			side = SELL
+		}
 		orders = append(orders, Order{
 			Price:        v.Px,
 			Amount:       v.Sz,
@@ -148,11 +196,10 @@ func (ok *OKExV5Spot) GetUnfinishOrders(currency CurrencyPair) ([]Order, error) 
 			Fee:          v.Fee,
 			Cid:          v.ClOrdID,
 			OrderID2:     v.OrdID,
-			Status:       0,
+			Status:       status,
 			Currency:     currency,
-			Side:         0,
+			Side:         side,
 			Type:         v.OrdType,
-			OrderType:    0,
 			OrderTime:    v.CTime,
 			FinishedTime: v.UTime,
 		})
@@ -165,8 +212,21 @@ func (ok *OKExV5Spot) GetOrderHistorys(currency CurrencyPair, opt ...OptionalPar
 
 }
 func (ok *OKExV5Spot) GetAccount() (*Account, error) {
-	panic("not support")
-
+	response, err := ok.GetAssetBalances("")
+	if err != nil {
+		
+	account := &Account{
+		SubAccounts: make(map[Currency]SubAccount, 2)}
+		for _, itm := range response {
+			currency := NewCurrency(itm.Currency, "")
+			account.SubAccounts[currency] = SubAccount{
+				Currency:     currency,
+				ForzenAmount: itm.Frozen,
+				Amount:       itm.Available,
+			}
+		}
+	
+		return account, nil
 }
 
 // public API
