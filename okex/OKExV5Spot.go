@@ -113,7 +113,11 @@ func (ok *OKExV5Spot) MarketSell(amount, price string, currency CurrencyPair) (*
 
 }
 func (ok *OKExV5Spot) CancelOrder(orderId string, currency CurrencyPair) (bool, error) {
-	panic("not support")
+	_, err := ok.CancelOrderV5(currency.ToSymbol("-"), orderId, "")
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 
 }
 func (ok *OKExV5Spot) GetOneOrder(orderId string, currency CurrencyPair) (*Order, error) {
@@ -121,7 +125,39 @@ func (ok *OKExV5Spot) GetOneOrder(orderId string, currency CurrencyPair) (*Order
 
 }
 func (ok *OKExV5Spot) GetUnfinishOrders(currency CurrencyPair) ([]Order, error) {
-	panic("not support")
+	response, err := ok.GetPendingOrders(&PendingOrderParam{
+		InstType: "SPOT",
+		Uly:      "",
+		InstId:   currency.ToSymbol("-"),
+		OrdType:  "",
+		State:    "",
+		After:    "",
+		Before:   "",
+		Limit:    "",
+	})
+	if err != nil {
+		return nil, err
+	}
+	orders := make([]Order, 0)
+	for _, v := range response {
+		orders = append(orders, Order{
+			Price:        v.Px,
+			Amount:       v.Sz,
+			AvgPrice:     ToFloat64(v.AvgPx),
+			DealAmount:   ToFloat64(v.AccFillSz),
+			Fee:          v.Fee,
+			Cid:          v.ClOrdID,
+			OrderID2:     v.OrdID,
+			Status:       0,
+			Currency:     currency,
+			Side:         0,
+			Type:         v.OrdType,
+			OrderType:    0,
+			OrderTime:    v.CTime,
+			FinishedTime: v.UTime,
+		})
+	}
+	return orders, nil
 
 }
 func (ok *OKExV5Spot) GetOrderHistorys(currency CurrencyPair, opt ...OptionalParameter) ([]Order, error) {

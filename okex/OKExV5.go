@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -253,7 +254,7 @@ type CreateOrderParam struct {
 	ReduceOnly  bool   //是否只减仓，true 或 false，默认false	仅适用于币币杠杆订单
 }
 
-type OrderV5 struct {
+type OrderSummaryV5 struct {
 	OrdId       string `json:"ordId"`
 	ClientOrdId string `json:"clOrdId"` //客户自定义订单ID	字母（区分大小写）与数字的组合，可以是纯字母、纯数字且长度要在1-32位之间。
 	Tag         string `json:"tag"`
@@ -261,7 +262,7 @@ type OrderV5 struct {
 	SMsg        string `json:"sMsg"`
 }
 
-func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderV5, error) {
+func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderSummaryV5, error) {
 
 	reqBody := make(map[string]interface{})
 
@@ -282,6 +283,7 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderV5, error) {
 		} else {
 			param.ClientOrdId = ("0bf60374efe445BC" + strings.Replace(uuid.New().String(), "-", "", 32))[:32]
 		}
+		reqBody["clOrdId"] = param.ClientOrdId
 	}
 	if param.Tag != "" {
 		reqBody["tag"] = param.Tag
@@ -297,15 +299,15 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderV5, error) {
 	}
 
 	type OrderResponse struct {
-		Code int     `json:"code,string"`
-		Msg  string  `json:"msg"`
-		Data OrderV5 `json:"data"`
+		Code int              `json:"code,string"`
+		Msg  string           `json:"msg"`
+		Data []OrderSummaryV5 `json:"data"`
 	}
 	var response OrderResponse
 
 	uri := "/api/v5/trade/order"
 
-	jsonStr, _, _ := ok.BuildRequestBody(param)
+	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
 	err := ok.DoRequest("POST", uri, jsonStr, &response)
 	if err != nil {
 		return nil, err
@@ -314,5 +316,134 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderV5, error) {
 	if response.Code != 0 {
 		return nil, fmt.Errorf("CreateOrder error:%s", response.Msg)
 	}
-	return &response.Data, nil
+	return &response.Data[0], nil
+}
+
+func (ok *OKExV5) CancelOrderV5(instId, ordId, clOrdId string) (*OrderSummaryV5, error) {
+
+	reqBody := make(map[string]interface{})
+
+	reqBody["instId"] = instId
+	if ordId != "" {
+		reqBody["ordId"] = ordId
+	}
+	if clOrdId != "" {
+		reqBody["clOrdId"] = clOrdId
+	}
+
+	type OrderResponse struct {
+		Code int              `json:"code,string"`
+		Msg  string           `json:"msg"`
+		Data []OrderSummaryV5 `json:"data"`
+	}
+	var response OrderResponse
+
+	uri := "/api/v5/trade/cancel-order"
+
+	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
+	err := ok.DoRequest("POST", uri, jsonStr, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code != 0 {
+		return nil, fmt.Errorf("CancelOrderV5 error:%s", response.Msg)
+	}
+	return &response.Data[0], nil
+}
+
+type PendingOrderParam struct {
+	InstType string
+	Uly      string
+	InstId   string //产品ID
+	OrdType  string
+	State    string
+	After    string
+	Before   string
+	Limit    string
+}
+
+type OrderV5 struct {
+	AccFillSz   string  `json:"accFillSz"`
+	AvgPx       string  `json:"avgPx"`
+	CTime       int     `json:"cTime,string"`
+	Category    string  `json:"category"`
+	Ccy         string  `json:"ccy"`
+	ClOrdID     string  `json:"clOrdId"`
+	Fee         float64 `json:"fee,string"`
+	FeeCcy      string  `json:"feeCcy"`
+	FillPx      string  `json:"fillPx"`
+	FillSz      string  `json:"fillSz"`
+	FillTime    string  `json:"fillTime"`
+	InstID      string  `json:"instId"`
+	InstType    string  `json:"instType"`
+	Lever       string  `json:"lever"`
+	OrdID       string  `json:"ordId"`
+	OrdType     string  `json:"ordType"`
+	Pnl         string  `json:"pnl"`
+	PosSide     string  `json:"posSide"`
+	Px          float64 `json:"px,string"`
+	Rebate      string  `json:"rebate"`
+	RebateCcy   string  `json:"rebateCcy"`
+	Side        string  `json:"side"`
+	SlOrdPx     string  `json:"slOrdPx"`
+	SlTriggerPx string  `json:"slTriggerPx"`
+	State       string  `json:"state"`
+	Sz          float64 `json:"sz,string"`
+	Tag         string  `json:"tag"`
+	TdMode      string  `json:"tdMode"`
+	TpOrdPx     string  `json:"tpOrdPx"`
+	TpTriggerPx string  `json:"tpTriggerPx"`
+	TradeID     string  `json:"tradeId"`
+	UTime       int64   `json:"uTime,string"`
+}
+
+func (ok *OKExV5) GetPendingOrders(param *PendingOrderParam) ([]OrderV5, error) {
+
+	reqBody := make(map[string]interface{})
+
+	if param.InstType != "" {
+		reqBody["instType"] = param.InstType
+	}
+	if param.Uly != "" {
+		reqBody["uly"] = param.Uly
+	}
+	if param.InstId != "" {
+		reqBody["instId"] = param.InstId
+	}
+	if param.OrdType != "" {
+		reqBody["ordType"] = param.OrdType
+	}
+	if param.State != "" {
+		reqBody["state"] = param.State
+	}
+	if param.Before != "" {
+		reqBody["before"] = param.Before
+	}
+	if param.After != "" {
+		reqBody["after"] = param.After
+	}
+	if param.Limit != "" {
+		reqBody["limit"] = param.Limit
+	}
+
+	type OrderResponse struct {
+		Code int       `json:"code,string"`
+		Msg  string    `json:"msg"`
+		Data []OrderV5 `json:"data"`
+	}
+	var response OrderResponse
+
+	uri := "/api/v5/trade/orders-pending"
+
+	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
+	err := ok.DoRequest(http.MethodGet, uri, jsonStr, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code != 0 {
+		return nil, fmt.Errorf("GetPendingOrders error:%s", response.Msg)
+	}
+	return response.Data, nil
 }

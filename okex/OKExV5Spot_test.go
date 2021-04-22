@@ -40,3 +40,20 @@ func TestOKExV5SpotGetKlineRecords(t *testing.T) {
 	c := newOKExV5SpotClient()
 	t.Log(c.GetKlineRecords(goex.BTC_USDT, goex.KLINE_PERIOD_1MIN, 10))
 }
+
+func TestOKExV5Spot_LimitBuy(t *testing.T) {
+	c := newOKExV5SpotClient()
+	t.Log(c.LimitBuy("1", "1.0", goex.XRP_USDT))
+	//{"code":"0","data":[{"clOrdId":"0bf60374efe445BC258eddf46df044c3","ordId":"305267682086109184","sCode":"0","sMsg":"","tag":""}],"msg":""}}
+}
+
+func TestOKExV5Spot_CancelOrder(t *testing.T) {
+	c := newOKExV5SpotClient()
+	t.Log(c.CancelOrder("305267682086109184", goex.XRP_USDT))
+}
+
+func TestOKExV5Spot_GetUnfinishOrders(t *testing.T) {
+	c := newOKExV5SpotClient()
+	t.Log(c.GetUnfinishOrders(goex.XRP_USDT))
+
+}
