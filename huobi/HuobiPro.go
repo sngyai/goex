@@ -85,10 +85,10 @@ func NewHuobiWithConfig(config *APIConfig) *HuoBiPro {
 	}
 
 	hbpro.Symbols = make(map[string]HuoBiProSymbol, 100)
-	_, err := hbpro.GetCurrenciesPrecision()
-	if err != nil {
-		Log.Panic("GetCurrenciesPrecision Error=", err)
-	}
+	// _, err := hbpro.GetCurrenciesPrecision()
+	// if err != nil {
+	// 	Log.Panic("GetCurrenciesPrecision Error=", err)
+	// }
 	return hbpro
 }
 
@@ -99,6 +99,7 @@ func NewHuoBiPro(client *http.Client, apikey, secretkey, accountId string) *HuoB
 	hbpro.AccessKey = apikey
 	hbpro.SecretKey = secretkey
 	hbpro.AccountId = accountId
+	hbpro.Symbols = make(map[string]HuoBiProSymbol, 100)
 	return hbpro
 }
 
@@ -117,10 +118,10 @@ func NewHuoBiProSpot(client *http.Client, apikey, secretkey string) *HuoBiPro {
 	}
 
 	hb.Symbols = make(map[string]HuoBiProSymbol, 100)
-	_, err = hb.GetCurrenciesPrecision()
-	if err != nil {
-		Log.Panic("GetCurrenciesPrecision Error=", err)
-	}
+	// _, err = hb.GetCurrenciesPrecision()
+	// if err != nil {
+	// 	Log.Panic("GetCurrenciesPrecision Error=", err)
+	// }
 	return hb
 }
 
@@ -228,19 +229,19 @@ func (hbpro *HuoBiPro) GetAccount() (*Account, error) {
 }
 
 func (hbpro *HuoBiPro) placeOrder(amount, price string, pair CurrencyPair, orderType string) (string, error) {
-	symbol := hbpro.Symbols[pair.ToLower().ToSymbol("")]
+	// symbol := hbpro.Symbols[pair.ToLower().ToSymbol("")]
 
 	path := "/v1/order/orders/place"
 	params := url.Values{}
 	params.Set("account-id", hbpro.AccountId)
 	params.Set("client-order-id", GenerateOrderClientId(32))
-	params.Set("amount", FloatToString(ToFloat64(amount), int(symbol.AmountPrecision)))
+	params.Set("amount", amount)
 	params.Set("symbol", pair.AdaptUsdToUsdt().ToLower().ToSymbol(""))
 	params.Set("type", orderType)
 
 	switch orderType {
 	case "buy-limit", "sell-limit":
-		params.Set("price", FloatToString(ToFloat64(price), int(symbol.PricePrecision)))
+		params.Set("price", price)
 	}
 
 	hbpro.buildPostForm("POST", path, &params)
@@ -766,6 +767,5 @@ func (hbpro *HuoBiPro) GetCurrenciesPrecision() ([]HuoBiProSymbol, error) {
 		Symbols = append(Symbols, sym)
 		hbpro.Symbols[sym.Symbol] = sym
 	}
-	//fmt.Println(Symbols)
 	return Symbols, nil
 }
