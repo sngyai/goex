@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/nntaoli-project/goex"
 	. "github.com/nntaoli-project/goex"
 )
 
@@ -205,11 +206,55 @@ func (ok *OKExV5Spot) GetUnfinishOrders(currency CurrencyPair) ([]Order, error) 
 		})
 	}
 	return orders, nil
-
 }
-func (ok *OKExV5Spot) GetOrderHistorys(currency CurrencyPair, opt ...OptionalParameter) ([]Order, error) {
-	panic("not support")
 
+func (ok *OKExV5Spot) GetOrderHistorys(currency CurrencyPair, opt ...OptionalParameter) ([]Order, error) {
+	response, err := ok.GetOrderHistory(
+		"SPOT",
+		"", //currency.ToSymbol("-"),
+		"", "", "", "",
+	)
+	if err != nil {
+		return nil, err
+	}
+	orders := make([]Order, 0)
+	for _, v := range response {
+		status := ORDER_UNFINISH
+		switch v.State {
+		case "canceled":
+			status = ORDER_CANCEL
+		case "live":
+			status = ORDER_UNFINISH
+		case "partially_filled":
+			status = ORDER_PART_FINISH
+		case "filled":
+			status = ORDER_FINISH
+		default:
+			status = ORDER_UNFINISH
+		}
+
+		side := BUY
+		if v.Side == "sell" || v.Side == "SELL" {
+			side = SELL
+		}
+
+		orders = append(orders, Order{
+			Price:        v.Px,
+			Amount:       v.Sz,
+			AvgPrice:     ToFloat64(v.AvgPx),
+			DealAmount:   ToFloat64(v.AccFillSz),
+			Fee:          v.Fee,
+			Cid:          v.ClOrdID,
+			OrderID2:     v.OrdID,
+			Status:       status,
+			Currency:     goex.NewCurrencyPair3(v.InstID, "-"),
+			Side:         side,
+			Type:         v.OrdType,
+			OrderTime:    v.CTime,
+			FinishedTime: v.UTime,
+		})
+	}
+	return orders, nil
 }
 
 func (ok *OKExV5Spot) GetAccount() (*Account, error) {

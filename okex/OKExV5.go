@@ -495,6 +495,56 @@ func (ok *OKExV5) GetOrderV5(instId, ordId, clOrdId string) (*OrderV5, error) {
 	return &response.Data[0], nil
 }
 
+func (ok *OKExV5) GetOrderHistory(instType, instId, ordType, state, afterID, beforeID string) ([]OrderV5, error) {
+
+	reqBody := make(map[string]string)
+
+	reqBody["instType"] = instType
+	if instId != "" {
+		reqBody["instId"] = instId
+	}
+	if ordType != "" {
+		reqBody["ordType"] = ordType
+	}
+	if state != "" {
+		reqBody["state"] = state
+	}
+	if afterID != "" {
+		reqBody["after"] = afterID
+	}
+	if beforeID != "" {
+		reqBody["before"] = beforeID
+	}
+	// reqBody["limit"] = "100"
+
+	type OrderResponse struct {
+		Code int       `json:"code,string"`
+		Msg  string    `json:"msg"`
+		Data []OrderV5 `json:"data"`
+	}
+	var response OrderResponse
+
+	uri := url.Values{}
+	for k, v := range reqBody {
+		uri.Set(k, v)
+	}
+	path := "/api/v5/trade/orders-history-archive"
+	if len(reqBody) > 0 {
+		path = fmt.Sprintf("%s?%s", path, uri.Encode())
+	}
+
+	jsonStr, _, _ := ok.BuildRequestBody(reqBody)
+	err := ok.DoAuthorRequest(http.MethodGet, path, jsonStr, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code != 0 {
+		return nil, fmt.Errorf("GetOrderV5 error:%s", response.Msg)
+	}
+	return response.Data, nil
+}
+
 type AssetSummary struct {
 	Currency  string  `json:"ccy"`
 	Total     float64 `json:"bal"`
