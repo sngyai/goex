@@ -1,6 +1,7 @@
 package okex
 
 import (
+	"math"
 	"strconv"
 	"time"
 
@@ -269,7 +270,7 @@ func (ok *OKExV5Spot) GetAccount() (*Account, error) {
 		account.SubAccounts[currency] = SubAccount{
 			Currency:     currency,
 			ForzenAmount: ToFloat64(itm.Frozen),
-			Amount:       ToFloat64(itm.AvailEq),
+			Amount:       math.Max(ToFloat64(itm.Available), ToFloat64(itm.AvailEq)),
 		}
 	}
 
