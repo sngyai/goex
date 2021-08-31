@@ -314,7 +314,15 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderSummaryV5, error) 
 	}
 
 	if response.Code != 0 {
-		return nil, fmt.Errorf("CreateOrder error:%s", response.Msg)
+		msg := response.Msg
+		if msg == "" {
+			if len(response.Data) > 0 {
+				msg = fmt.Sprintf("code:%d, scode:%s, smsg:%s", response.Code, response.Data[0].SCode, response.Data[0].SMsg)
+			} else {
+				msg = fmt.Sprintf("code:%d", response.Code)
+			}
+		}
+		return nil, fmt.Errorf("CreateOrder error:%s", msg)
 	}
 	return &response.Data[0], nil
 }
@@ -347,7 +355,15 @@ func (ok *OKExV5) CancelOrderV5(instId, ordId, clOrdId string) (*OrderSummaryV5,
 	}
 
 	if response.Code != 0 {
-		return nil, fmt.Errorf("CancelOrderV5 error:%s", response.Msg)
+		msg := response.Msg
+		if msg == "" {
+			if len(response.Data) > 0 {
+				msg = fmt.Sprintf("code:%d, scode:%s, smsg:%s", response.Code, response.Data[0].SCode, response.Data[0].SMsg)
+			} else {
+				msg = fmt.Sprintf("code:%d", response.Code)
+			}
+		}
+		return nil, fmt.Errorf("CancelOrderV5 error:%s", msg)
 	}
 	return &response.Data[0], nil
 }
