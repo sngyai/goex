@@ -25,6 +25,7 @@ type OKEx struct {
 	OKExV3FuturesWs *OKExV3FuturesWs
 	OKExV3SpotWs    *OKExV3SpotWs
 	OKExV3SwapWs    *OKExV3SwapWs
+	customCIDFunc   func() string
 }
 
 func NewOKEx(config *APIConfig) *OKEx {
@@ -49,6 +50,10 @@ func (ok *OKEx) GetExchangeName() string {
 
 func (ok *OKEx) UUID() string {
 	return strings.Replace(uuid.New().String(), "-", "", 32)
+}
+
+func (ok *OKEx) SetCustomCID(f func() string) {
+	ok.customCIDFunc = f
 }
 
 func (ok *OKEx) DoRequest(httpMethod, uri, reqBody string, response interface{}) error {
