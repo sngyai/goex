@@ -43,7 +43,7 @@ type AccountInfo struct {
 type HuoBiPro struct {
 	httpClient *http.Client
 	baseUrl    string
-	accountId  string
+	AccountId  string
 	accessKey  string
 	secretKey  string
 	Symbols    map[string]HuoBiProSymbol
@@ -75,12 +75,12 @@ func NewHuobiWithConfig(config *APIConfig) *HuoBiPro {
 	if config.ApiKey != "" && config.ApiSecretKey != "" {
 		accinfo, err := hbpro.GetAccountInfo(HB_SPOT_ACCOUNT)
 		if err != nil {
-			hbpro.accountId = ""
+			hbpro.AccountId = ""
 			//panic(err)
 		} else {
-			hbpro.accountId = accinfo.Id
+			hbpro.AccountId = accinfo.Id
 			//log.Println("account state :", accinfo.State)
-			Log.Info("accountId=", accinfo.Id, ",state=", accinfo.State, ",type=", accinfo.Type)
+			Log.Info("AccountId=", accinfo.Id, ",state=", accinfo.State, ",type=", accinfo.Type)
 		}
 	}
 
@@ -92,13 +92,13 @@ func NewHuobiWithConfig(config *APIConfig) *HuoBiPro {
 	return hbpro
 }
 
-func NewHuoBiPro(client *http.Client, apikey, secretkey, accountId string) *HuoBiPro {
+func NewHuoBiPro(client *http.Client, apikey, secretkey, AccountId string) *HuoBiPro {
 	hbpro := new(HuoBiPro)
 	hbpro.baseUrl = "https://api.huobi.pro"
 	hbpro.httpClient = client
 	hbpro.accessKey = apikey
 	hbpro.secretKey = secretkey
-	hbpro.accountId = accountId
+	hbpro.AccountId = AccountId
 	return hbpro
 }
 
@@ -109,10 +109,10 @@ func NewHuoBiProSpot(client *http.Client, apikey, secretkey string) *HuoBiPro {
 	hb := NewHuoBiPro(client, apikey, secretkey, "")
 	accinfo, err := hb.GetAccountInfo(HB_SPOT_ACCOUNT)
 	if err != nil {
-		hb.accountId = ""
+		hb.AccountId = ""
 		panic(err)
 	} else {
-		hb.accountId = accinfo.Id
+		hb.AccountId = accinfo.Id
 		Log.Info("account state :", accinfo.State)
 	}
 
@@ -133,7 +133,7 @@ func NewHuoBiProPoint(client *http.Client, apikey, secretkey string) *HuoBiPro {
 	if err != nil {
 		panic(err)
 	}
-	hb.accountId = accinfo.Id
+	hb.AccountId = accinfo.Id
 	Log.Info("account state :" + accinfo.State)
 	return hb
 }
@@ -171,9 +171,9 @@ func (hbpro *HuoBiPro) GetAccountInfo(acc string) (AccountInfo, error) {
 }
 
 func (hbpro *HuoBiPro) GetAccount() (*Account, error) {
-	path := fmt.Sprintf("/v1/account/accounts/%s/balance", hbpro.accountId)
+	path := fmt.Sprintf("/v1/account/accounts/%s/balance", hbpro.AccountId)
 	params := &url.Values{}
-	params.Set("accountId-id", hbpro.accountId)
+	params.Set("AccountId-id", hbpro.AccountId)
 	hbpro.buildPostForm("GET", path, params)
 
 	urlStr := hbpro.baseUrl + path + "?" + params.Encode()
@@ -232,7 +232,7 @@ func (hbpro *HuoBiPro) placeOrder(amount, price string, pair CurrencyPair, order
 
 	path := "/v1/order/orders/place"
 	params := url.Values{}
-	params.Set("account-id", hbpro.accountId)
+	params.Set("account-id", hbpro.AccountId)
 	params.Set("client-order-id", GenerateOrderClientId(32))
 	params.Set("amount", FloatToString(ToFloat64(amount), int(symbol.AmountPrecision)))
 	params.Set("symbol", pair.AdaptUsdToUsdt().ToLower().ToSymbol(""))
