@@ -81,8 +81,12 @@ type TradeInfoV5 struct {
 	MinSize  float64 `json:"minSz,string"`
 }
 
-func (ok *OKExV5) GetTradeInfoV5(instType, instId string) (*TradeInfoV5, error) {
-	urlPath := fmt.Sprintf("%s/api/v5/public/instruments?instType=%s&instId=%s", ok.config.Endpoint, instType, instId)
+func (ok *OKExV5) GetTradeInfosV5(instType, instId string) ([]TradeInfoV5, error) {
+
+	urlPath := fmt.Sprintf("%s/api/v5/public/instruments?instType=%s", ok.config.Endpoint, instType)
+	if instId != "" {
+		urlPath = fmt.Sprintf("%s&instId=%s", urlPath, instId)
+	}
 	type TradeInfoV5Response struct {
 		Code int           `json:"code,string"`
 		Msg  string        `json:"msg"`
@@ -97,7 +101,7 @@ func (ok *OKExV5) GetTradeInfoV5(instType, instId string) (*TradeInfoV5, error) 
 	if response.Code != 0 {
 		return nil, fmt.Errorf("GetTradeInfoV5 error:%s", response.Msg)
 	}
-	return &response.Data[0], nil
+	return response.Data, nil
 }
 
 type TickerV5 struct {

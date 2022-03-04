@@ -389,32 +389,33 @@ func (ok *OKExV5Spot) GetExchangeName() string {
 	return ok.ExchangeName() + "_v5_spot"
 }
 
-func (ok *OKExV5Spot) GetCurrenciesPrecision(currencyPair CurrencyPair) ([]OKExSpotSymbol, error) {
-	info, err := ok.GetTradeInfoV5("SPOT", currencyPair.ToSymbol("-"))
+func (ok *OKExV5Spot) GetCurrenciesPrecision() ([]OKExSpotSymbol, error) {
+	response, err := ok.GetTradeInfosV5("SPOT", "")
 	if err != nil {
 		return nil, err
 	}
 
 	var Symbols []OKExSpotSymbol
+	for _, info := range response {
+		var sym OKExSpotSymbol
+		sym.Symbol = info.InstId
+		sym.MinAmount = info.MinSize
 
-	var sym OKExSpotSymbol
-	sym.Symbol = info.InstId
-	sym.MinAmount = info.MinSize
+		pres := strings.Split(info.TickSize, ".")
+		if len(pres) == 1 {
+			sym.PricePrecision = 0
+		} else {
+			sym.PricePrecision = float64(len(pres[1]))
+		}
 
-	pres := strings.Split(info.TickSize, ".")
-	if len(pres) == 1 {
-		sym.PricePrecision = 0
-	} else {
-		sym.PricePrecision = float64(len(pres[1]))
+		pres = strings.Split(info.LotSize, ".")
+		if len(pres) == 1 {
+			sym.AmountPrecision = 0
+		} else {
+			sym.AmountPrecision = float64(len(pres[1]))
+		}
+
+		Symbols = append(Symbols, sym)
 	}
-
-	pres = strings.Split(info.LotSize, ".")
-	if len(pres) == 1 {
-		sym.AmountPrecision = 0
-	} else {
-		sym.AmountPrecision = float64(len(pres[1]))
-	}
-
-	Symbols = append(Symbols, sym)
 	return Symbols, nil
 }
