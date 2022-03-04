@@ -79,6 +79,8 @@ type TradeInfoV5 struct {
 	TickSize string  `json:"tickSz"`
 	LotSize  string  `json:"lotSz"`
 	MinSize  float64 `json:"minSz,string"`
+	BaseCcy  string  `json:"baseCcy"`
+	QuoteCcy string  `json:"quoteCcy"`
 }
 
 func (ok *OKExV5) GetTradeInfosV5(instType, instId string) ([]TradeInfoV5, error) {
