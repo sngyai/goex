@@ -79,6 +79,8 @@ type TradeInfoV5 struct {
 	TickSize string  `json:"tickSz"`
 	LotSize  string  `json:"lotSz"`
 	MinSize  float64 `json:"minSz,string"`
+	BaseCcy  string  `json:"baseCcy"`
+	QuoteCcy string  `json:"quoteCcy"`
 }
 
 func (ok *OKExV5) GetTradeInfosV5(instType, instId string) ([]TradeInfoV5, error) {
@@ -254,7 +256,7 @@ func (ok *OKExV5) DoAuthorRequest(httpMethod, uri, reqBody string, response inte
 		OK_ACCESS_KEY:        ok.config.ApiKey,
 		OK_ACCESS_PASSPHRASE: ok.config.ApiPassphrase,
 		OK_ACCESS_SIGN:       sign,
-		OK_ACCESS_TIMESTAMP:  fmt.Sprint(timestamp)})
+		OK_ACCESS_TIMESTAMP:  timestamp})
 	if err != nil {
 		//log.Println(err)
 		return err

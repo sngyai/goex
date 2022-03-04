@@ -66,3 +66,11 @@ func TestOKExV5Spot_GetAccount(t *testing.T) {
 	c := newOKExV5SpotClient()
 	t.Log(c.GetAccount())
 }
+
+func TestOKExV5Spot_GetExchangeName(t *testing.T) {
+	t.Log(newOKExV5SpotClient().GetExchangeName())
+}
+
+func TestOKExV5Spot_GetCurrenciesPrecision(t *testing.T) {
+	t.Log(newOKExV5SpotClient().GetCurrenciesPrecision())
+}
