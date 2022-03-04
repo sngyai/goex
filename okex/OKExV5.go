@@ -73,6 +73,32 @@ func (ok *OKExV5) SetCustomCID(f func() string) {
 // 		Date: uint64(time.Duration(date.UnixNano() / int64(time.Millisecond)))}, nil
 
 // }
+type TradeInfoV5 struct {
+	InstId   string  `json:"instId"`
+	InstType string  `json:"instType"`
+	TickSize string  `json:"tickSz"`
+	LotSize  string  `json:"lotSz"`
+	MinSize  float64 `json:"minSz,string"`
+}
+
+func (ok *OKExV5) GetTradeInfoV5(instType, instId string) (*TradeInfoV5, error) {
+	urlPath := fmt.Sprintf("%s/api/v5/public/instruments?instType=%s&instId=%s", ok.config.Endpoint, instType, instId)
+	type TradeInfoV5Response struct {
+		Code int           `json:"code,string"`
+		Msg  string        `json:"msg"`
+		Data []TradeInfoV5 `json:"data"`
+	}
+	var response TradeInfoV5Response
+	err := HttpGet4(ok.config.HttpClient, urlPath, nil, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code != 0 {
+		return nil, fmt.Errorf("GetTradeInfoV5 error:%s", response.Msg)
+	}
+	return &response.Data[0], nil
+}
 
 type TickerV5 struct {
 	InstId    string  `json:"instId"`
