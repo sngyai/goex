@@ -402,6 +402,7 @@ func (ok *OKExV5Spot) GetCurrenciesPrecision() ([]OKExSpotSymbol, error) {
 		sym.MinAmount = info.MinSize
 		sym.BaseCurrency = info.BaseCcy
 		sym.QuoteCurrency = info.QuoteCcy
+
 		pres := strings.Split(info.TickSize, ".")
 		if len(pres) == 1 {
 			sym.PricePrecision = 0
