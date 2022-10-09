@@ -68,7 +68,7 @@ const (
 	XRP_USD_SWAP = "XRP-USD-SWAP"
 
 	/*Rest Endpoint*/
-	Endpoint              = "https://www.okex.com"
+	Endpoint              = "https://www.okx.com"
 	GET_ACCOUNTS          = "/api/swap/v3/accounts"
 	PLACE_ORDER           = "/api/swap/v3/order"
 	CANCEL_ORDER          = "/api/swap/v3/cancel_order/%s/%s"

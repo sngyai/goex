@@ -19,7 +19,7 @@ var config = &goex.APIConfig{
 			},
 		},
 	},
-	Endpoint:      "https://www.okex.com",
+	Endpoint:      "https://www.okx.com",
 	ApiKey:        "",
 	ApiSecretKey:  "",
 	ApiPassphrase: "",

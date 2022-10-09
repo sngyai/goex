@@ -36,7 +36,7 @@ func NewOKExV3Ws(base *OKEx, handle func(channel string, data json.RawMessage) e
 		respHandle: handle,
 	}
 	okV3Ws.WsBuilder = NewWsBuilder().
-		WsUrl("wss://real.okex.com:8443/ws/v3").
+		WsUrl("wss://real.okx.com:8443/ws/v3").
 		ReconnectInterval(time.Second).
 		AutoReconnect().
 		Heartbeat(func() []byte { return []byte("ping") }, 28*time.Second).

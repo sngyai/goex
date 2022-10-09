@@ -20,7 +20,7 @@ func newOKExV5Client() *OKExV5 {
 				},
 			},
 		},
-		Endpoint:      "https://www.okex.com",
+		Endpoint:      "https://www.okx.com",
 		ApiKey:        "",
 		ApiSecretKey:  "",
 		ApiPassphrase: "",

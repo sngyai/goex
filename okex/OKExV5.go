@@ -15,8 +15,8 @@ import (
 	"github.com/nntaoli-project/goex/internal/logger"
 )
 
-const v5RestBaseUrl = "https://www.okex.com"
-const v5WsBaseUrl = "wss://ws.okex.com:8443/ws/v5"
+const v5RestBaseUrl = "https://www.okx.com"
+const v5WsBaseUrl = "wss://ws.okx.com:8443/ws/v5"
 
 // base interface for okex v5
 type OKExV5 struct {

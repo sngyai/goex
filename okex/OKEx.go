@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const baseUrl = "https://www.okex.com"
+const baseUrl = "https://www.okx.com"
 
 type OKEx struct {
 	config          *APIConfig
