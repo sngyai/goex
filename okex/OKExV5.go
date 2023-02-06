@@ -354,7 +354,7 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderSummaryV5, error) 
 				msg = fmt.Sprintf("code:%d", response.Code)
 			}
 		}
-		return nil, fmt.Errorf("CreateOrder error:%s", msg)
+		return nil, fmt.Errorf("CreateOrder error, code:%d, msg:%s", response.Code,msg)
 	}
 	return &response.Data[0], nil
 }
