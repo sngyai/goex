@@ -354,7 +354,8 @@ func (ok *OKExV5) CreateOrder(param *CreateOrderParam) (*OrderSummaryV5, error) 
 				msg = fmt.Sprintf("code:%d", response.Code)
 			}
 		}
-		return nil, fmt.Errorf("CreateOrder error, code:%d, msg:%s", response.Code,msg)
+		resp, _ := json.Marshal(response)
+		return nil, fmt.Errorf("CreateOrder error, REQ:[POST] %s %s, RSP:%s", uri, jsonStr, string(resp))
 	}
 	return &response.Data[0], nil
 }
