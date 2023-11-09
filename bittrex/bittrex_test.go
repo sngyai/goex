@@ -1,7 +1,7 @@
 package bittrex
 
 import (
-	"github.com/nntaoli-project/goex"
+	"github.com/sngyai/goex"
 	"net/http"
 	"testing"
 )

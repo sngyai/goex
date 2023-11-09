@@ -2,7 +2,7 @@ package coinex
 
 import (
 	"fmt"
-	"github.com/nntaoli-project/goex"
+	"github.com/sngyai/goex"
 	"net/http"
 	"testing"
 )

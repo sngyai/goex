@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/nntaoli-project/goex"
+	. "github.com/sngyai/goex"
 )
 
 type Bitfinex struct {

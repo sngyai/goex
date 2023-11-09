@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/nntaoli-project/goex/internal/logger"
+	"github.com/sngyai/goex/internal/logger"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
-	. "github.com/nntaoli-project/goex"
+	. "github.com/sngyai/goex"
 )
 
 const (
@@ -577,9 +577,11 @@ func (ok *OKExSwap) GetKlineRecords(contractType string, currency CurrencyPair, 
 	return ok.GetKlineRecords2(contractType, currency, "", "", strconv.Itoa(granularity))
 }
 
-/**
-  since : 单位秒,开始时间
-  to : 单位秒,结束时间
+/*
+*
+
+	since : 单位秒,开始时间
+	to : 单位秒,结束时间
 */
 func (ok *OKExSwap) GetKlineRecordsByRange(currency CurrencyPair, period, since, to int) ([]FutureKline, error) {
 	urlPath := "/api/swap/v3/instruments/%s/candles?start=%s&end=%s&granularity=%d"
@@ -615,8 +617,10 @@ func (ok *OKExSwap) GetKlineRecordsByRange(currency CurrencyPair, period, since,
 	return klines, nil
 }
 
-/**
-  since : 单位秒,开始时间
+/*
+*
+
+	since : 单位秒,开始时间
 */
 func (ok *OKExSwap) GetKlineRecords2(contractType string, currency CurrencyPair, start, end, period string) ([]FutureKline, error) {
 	urlPath := "/api/swap/v3/instruments/%s/candles?%s"
@@ -739,9 +743,9 @@ func (ok *OKExSwap) GetMarginLevel(currencyPair CurrencyPair) (*MarginLeverage, 
 }
 
 // marginmode
-//1:逐仓-多仓
-//2:逐仓-空仓
-//3:全仓
+// 1:逐仓-多仓
+// 2:逐仓-空仓
+// 3:全仓
 func (ok *OKExSwap) SetMarginLevel(currencyPair CurrencyPair, level, marginMode int) (*MarginLeverage, error) {
 	var resp MarginLeverage
 	uri := fmt.Sprintf("/api/swap/v3/accounts/%s/leverage", ok.adaptContractType(currencyPair))
@@ -761,7 +765,7 @@ func (ok *OKExSwap) SetMarginLevel(currencyPair CurrencyPair, level, marginMode 
 	return &resp, nil
 }
 
-//委托策略下单 algo_type 1:限价 2:市场价；触发价格类型，默认是限价；为市场价时，委托价格不必填；
+// 委托策略下单 algo_type 1:限价 2:市场价；触发价格类型，默认是限价；为市场价时，委托价格不必填；
 func (ok *OKExSwap) PlaceFutureAlgoOrder(ord *FutureOrder) (*FutureOrder, error) {
 	var param struct {
 		InstrumentId string `json:"instrument_id"`
@@ -811,7 +815,7 @@ func (ok *OKExSwap) PlaceFutureAlgoOrder(ord *FutureOrder) (*FutureOrder, error)
 	return ord, nil
 }
 
-//委托策略撤单
+// 委托策略撤单
 func (ok *OKExSwap) FutureCancelAlgoOrder(currencyPair CurrencyPair, orderId []string) (bool, error) {
 	if len(orderId) == 0 {
 		return false, errors.New("invalid order id")
@@ -848,7 +852,7 @@ func (ok *OKExSwap) FutureCancelAlgoOrder(currencyPair CurrencyPair, orderId []s
 	return resp.Data.Result == "success", nil
 }
 
-//获取委托单列表, status和algo_id必填且只能填其一
+// 获取委托单列表, status和algo_id必填且只能填其一
 func (ok *OKExSwap) GetFutureAlgoOrders(algo_id string, status string, currencyPair CurrencyPair) ([]FutureOrder, error) {
 	uri := fmt.Sprintf(GET_ALGO_ORDER, ok.adaptContractType(currencyPair), 1)
 	if algo_id != "" {

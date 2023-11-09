@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	. "github.com/nntaoli-project/goex"
+	. "github.com/sngyai/goex"
 	"net/http"
 	"net/url"
 	"sort"
@@ -519,8 +519,8 @@ func (bn *Binance) GetKlineRecords(currency CurrencyPair, period KlinePeriod, si
 
 }
 
-//非个人，整个交易所的交易记录
-//注意：since is fromId
+// 非个人，整个交易所的交易记录
+// 注意：since is fromId
 func (bn *Binance) GetTrades(currencyPair CurrencyPair, since int64) ([]Trade, error) {
 	param := url.Values{}
 	param.Set("symbol", currencyPair.ToSymbol(""))

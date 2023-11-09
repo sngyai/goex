@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	. "github.com/nntaoli-project/goex"
+	. "github.com/sngyai/goex"
 	"net/http"
 	"net/url"
 	"strconv"

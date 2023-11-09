@@ -1,4 +1,4 @@
-module github.com/nntaoli-project/goex
+module github.com/sngyai/goex
 
 go 1.17
 

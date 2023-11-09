@@ -1,12 +1,13 @@
 package binance
 
 import (
-	goex "github.com/nntaoli-project/goex"
 	"net"
 	"net/http"
 	"net/url"
 	"testing"
 	"time"
+
+	"github.com/sngyai/goex"
 )
 
 var bs = NewBinanceSwap(&goex.APIConfig{
@@ -40,7 +41,7 @@ func TestBinanceSwap_GetFutureIndex(t *testing.T) {
 }
 
 func TestBinanceSwap_GetKlineRecords(t *testing.T) {
-	kline, err := bs.GetKlineRecords("", goex.BTC_USDT, goex.KLINE_PERIOD_4H, 1, 0)
+	kline, err := bs.GetKlineRecords("", goex.BTC_USDT, goex.KLINE_PERIOD_4H, 1)
 	t.Log(err, kline[0].Kline)
 }
 

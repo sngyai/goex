@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/nntaoli-project/goex"
-	"github.com/nntaoli-project/goex/internal/logger"
+	"github.com/sngyai/goex"
+	"github.com/sngyai/goex/internal/logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +13,6 @@ func init() {
 	logger.Log.SetLevel(logger.DEBUG)
 }
 
-//
 var config2 = &goex.APIConfig{
 	Endpoint:   "https://www.okex.me",
 	HttpClient: http.DefaultClient,
